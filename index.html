@@ -3,175 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kieli-Treeni AI + Kuvat</title>
+    <title>Kieli-Treeni AI 2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .loading { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .loading { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-        .whitespace-pre-wrap { white-space: pre-wrap; }
+        .comic-box { border: 3px solid #1e293b; border-radius: 1rem; overflow: hidden; background: white; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans">
+<body class="bg-slate-900 min-h-screen font-sans text-slate-100">
 
-    <div class="max-w-3xl mx-auto py-10 px-4">
-        <div class="bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
-            
-            <div class="bg-blue-950 p-6 text-white flex justify-between items-center border-b-4 border-yellow-400">
-                <h1 class="text-2xl font-bold italic text-white flex items-center gap-2">
-                    <span id="langFlag">🇪🇸</span> <span id="langTitle">Aprendemos Español!</span>
-                </h1>
-                <select id="langSelect" onchange="changeLanguage()" class="bg-blue-800 text-white p-2 rounded-lg text-sm border border-blue-700">
-                    <option value="es">Espanja</option>
-                    <option value="ja">Japani (WIP)</option>
-                    <option value="it">Italia (WIP)</option>
-                </select>
+    <div class="max-w-4xl mx-auto py-8 px-4">
+        <div class="flex justify-between items-center mb-6 bg-slate-800 p-4 rounded-2xl shadow-xl border border-slate-700">
+            <div>
+                <h1 id="langTitle" class="text-xl font-bold text-yellow-400">🇪🇸 Aprendemos Español!</h1>
+                <div class="text-xs text-slate-400 flex gap-4 mt-1">
+                    <span>🔥 Putki: <b id="streak">0</b> päivää</span>
+                    <span>✅ Tehty: <b id="totalTasks">0</b> kpl</span>
+                </div>
+            </div>
+            <select id="langSelect" onchange="updateUI()" class="bg-slate-700 text-white p-2 rounded-lg text-sm outline-none border border-slate-600">
+                <option value="es">Espanja</option>
+                <option value="ja">Japani</option>
+                <option value="it">Italia</option>
+            </select>
+        </div>
+
+        <div class="bg-white text-slate-900 rounded-3xl shadow-2xl overflow-hidden shadow-blue-500/20">
+            <div class="p-6 bg-slate-50 border-b border-slate-200 grid grid-cols-3 gap-3">
+                <button onclick="generate('uutinen')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition text-sm">📰 Uutiset</button>
+                <button onclick="generate('sarjakuva')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition text-sm">🎨 Sarjakuva</button>
+                <button onclick="generate('keskustelu')" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition text-sm">💬 Chatti</button>
             </div>
 
-            <div class="p-6">
-                <p class="text-gray-600 mb-4 font-medium">Valitse harjoituksen tyyppi:</p>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                    <button onclick="generate('uutinen')" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-4 rounded-xl transition shadow flex items-center justify-center gap-2">
-                        📰 Uutiset
-                    </button>
-                    <button onclick="generate('sarjakuva')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition shadow flex items-center justify-center gap-2">
-                        🎨 Sarjakuva/Tarina
-                    </button>
-                    <button onclick="generate('keskustelu')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-4 rounded-xl transition shadow flex items-center justify-center gap-2">
-                        💬 Keskustelu
-                    </button>
-                </div>
-
-                <div id="output" class="min-h-[400px] border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-slate-50 text-gray-800 leading-relaxed">
-                    <div class="text-gray-400 text-center mt-20">
-                        <p class="text-5xl mb-4">👋</p>
-                        <p>¡Hola! Tervetuloa treenaamaan.</p>
-                        <p class="text-sm">Varmista, että API-avain on syötetty alle.</p>
-                    </div>
+            <div id="output" class="p-6 min-h-[400px]">
+                <div class="text-center text-slate-400 mt-20">
+                    <p class="text-6xl mb-4">🚀</p>
+                    <p class="text-lg font-medium">Valitse harjoitus ylhäältä aloittaaksesi!</p>
+                    <p class="text-sm">Varmista, että API-avain on syötetty alle.</p>
                 </div>
             </div>
 
-            <div class="bg-gray-50 p-6 border-t border-gray-100 mt-4">
-                <details class="text-gray-500">
-                    <summary class="cursor-pointer text-xs font-semibold uppercase tracking-wider mb-2">Asetukset (API-avain)</summary>
-                    <input type="password" id="apiKey" 
-                           placeholder="Liitä OpenRouter-avaimesi (sk-or-v1...)" 
-                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm mt-2">
-                    <p class="text-[10px] text-gray-400 mt-2 italic">* Avain tallentuu vain selaimeesi. Älä jaa tätä sivua julkisesti sosiaalisessa mediassa.</p>
-                </details>
+            <div id="controls" class="hidden p-4 bg-slate-100 border-t flex justify-center gap-4">
+                <button onclick="speakText()" class="flex items-center gap-2 bg-slate-800 text-white px-6 py-2 rounded-full hover:bg-black transition font-bold">
+                    🔊 Lue ääneen
+                </button>
             </div>
         </div>
-        <p class="text-center text-gray-400 text-xs mt-6 text-white">Gemini 2.0 Flash @ OpenRouter | Ilmaiset kuvat: Source.Unsplash</p>
+
+        <div class="mt-8 bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg">
+            <details>
+                <summary class="cursor-pointer text-slate-400 text-sm font-bold uppercase tracking-widest">⚙️ Asetukset & API Avain</summary>
+                <div class="mt-4">
+                    <input type="password" id="apiKey" placeholder="Liitä OpenRouter-avain täähän..." class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-blue-500 transition">
+                    <p class="text-[10px] text-slate-500 mt-2 italic">Avain tallentuu vain selaimeesi. Tätä koodia saa antaa vain ystäville henkilökohtaisesti.</p>
+                </div>
+            </details>
+        </div>
     </div>
 
     <script>
-        // Kieliasetukset
-        const languages = {
-            es: { flag: '🇪🇸', title: 'Aprendemos Español!', promptLang: 'Spanish' },
-            ja: { flag: '🇯🇵', title: '日本語を学びましょう!', promptLang: 'Japanese' },
-            it: { flag: '🇮🇹', title: 'Impariamo l’Italiano!', promptLang: 'Italian' }
+        const langs = {
+            es: { title: '🇪🇸 Aprendemos Español!', name: 'Spanish', speech: 'es-ES' },
+            ja: { title: '🇯🇵 日本語を学びましょう!', name: 'Japanese', speech: 'ja-JP' },
+            it: { title: '🇮🇹 Impariamo l’Italiano!', name: 'Italian', speech: 'it-IT' }
         };
 
-        // Lataa avain muistista jos se on tallennettu
-        document.getElementById('apiKey').value = localStorage.getItem('espanja_key') || '';
+        // Alustus
+        document.getElementById('apiKey').value = localStorage.getItem('user_api_key') || '';
+        updateStats();
 
-        function changeLanguage() {
-            const lang = document.getElementById('langSelect').value;
-            document.getElementById('langFlag').innerText = languages[lang].flag;
-            document.getElementById('langTitle').innerText = languages[lang].title;
-            // Tyhjennetään output kun kieli vaihtuu
-            document.getElementById('output').innerHTML = '<p class="text-gray-400 text-center mt-20">Kieli vaihdettu. Valitse harjoitus.</p>';
+        function updateUI() {
+            const l = document.getElementById('langSelect').value;
+            document.getElementById('langTitle').innerText = langs[l].title;
+            document.getElementById('output').innerHTML = '<p class="text-center mt-20 text-slate-400 italic">Kieli vaihdettu. Valitse harjoitus.</p>';
+            document.getElementById('controls').classList.add('hidden');
+        }
+
+        function updateStats() {
+            const stats = JSON.parse(localStorage.getItem('stats') || '{"total":0, "streak":0, "lastDate":""}');
+            document.getElementById('streak').innerText = stats.streak;
+            document.getElementById('totalTasks').innerText = stats.total;
+            return stats;
+        }
+
+        function saveStat() {
+            let stats = JSON.parse(localStorage.getItem('stats') || '{"total":0, "streak":0, "lastDate":""}');
+            const today = new Date().toDateString();
+            
+            stats.total += 1;
+            if (stats.lastDate !== today) {
+                stats.streak += 1;
+                stats.lastDate = today;
+            }
+            localStorage.setItem('stats', JSON.stringify(stats));
+            updateStats();
         }
 
         async function generate(type) {
-            const keyField = document.getElementById('apiKey');
-            const key = keyField.value.trim();
+            const key = document.getElementById('apiKey').value.trim();
             const output = document.getElementById('output');
-            const lang = document.getElementById('langSelect').value;
-            const currentLangName = languages[lang].promptLang;
+            const langCode = document.getElementById('langSelect').value;
+            const langName = langs[langCode].name;
 
-            if (!key) {
-                alert("Ole hyvä ja syötä API-avain alalaidan kenttään (Asetukset)!");
-                return;
-            }
+            if (!key) return alert("Syötä API-avain asetuksiin!");
+            localStorage.setItem('user_api_key', key);
 
-            localStorage.setItem('espanja_key', key);
+            output.innerHTML = `<div class="loading text-center mt-20 text-blue-600 font-bold">Tekoäly miettii harjoitusta...</div>`;
+            document.getElementById('controls').classList.add('hidden');
 
-            output.innerHTML = `<div class="loading text-center mt-20 text-blue-600 font-bold text-white">Luodaan harjoitusta (kieli: ${currentLangName})...</div>`;
-
-            // Promptin hienosäätö tyypin mukaan
-            let promptDetails = '';
-            if (type === 'uutinen') {
-                promptDetails = 'Write a 5-sentence recent news summary. Include a simple headline.';
-            } else if (type === 'sarjakuva') {
-                promptDetails = 'Write a 4-panel simple story (like a comic strip). Describe the scene for each panel briefly. Then write the text for the panel. Make it about a everyday situation.';
-            } else {
-                promptDetails = 'Imagine a dialogue between a student and a teacher discussing "plans for the weekend". Write 6-8 lines of dialogue.';
-            }
-
-            const prompt = `Act as a helpful language tutor for a Finnish student learning ${currentLangName}.
-            1. Task: ${promptDetails}
-            2. Format the output in clean HTML:
-               - An <h3> for the headline.
-               - A <div> with class "whitespace-pre-wrap" for the main text in ${currentLangName}.
-               - Below that, an <em> for the Finnish translation.
-               - A separate section for 5 key vocabulary words (Spanish - Finnish).
-            3. *Important for Images*: Before the main text, provide one simple English keyword related to the content of the story/news (e.g., "beach", "cat", "city").`;
+            const prompt = `Act as a language tutor. Create a ${type} for a Finnish student learning ${langName}. 
+            Structure:
+            1. One English keyword for a picture related to the story (e.g. Keyword: Forest).
+            2. A short Title in ${langName}.
+            3. The main text/dialogue in ${langName}.
+            4. Finnish translation.
+            5. Vocabulary: 5 words (${langName} - Finnish).
+            Use HTML tags like <h3> and <p> for formatting. Keep it simple and helpful.`;
 
             try {
-                const response = await fetch("https://openrouter.ai/ai/v1/chat/completions", {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${key}`,
-                        "HTTP-Referer": window.location.href,
-                        "X-Title": "Language Tutor App"
-                    },
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
                     body: JSON.stringify({
                         "model": "google/gemini-2.0-flash-001",
-                        "messages": [{ "role": "user", "content": prompt }],
-                        "temperature": 0.6
+                        "messages": [{ "role": "user", "content": prompt }]
                     })
                 });
 
                 const data = await response.json();
+                if (data.error) throw new Error(data.error.message);
 
-                if (data.error) {
-                    output.innerHTML = `<div class="bg-red-50 p-4 rounded-lg text-red-700"><strong>Virhe OpenRouterissa:</strong><br>${data.error.message}</div>`;
-                } else {
-                    let aiResponse = data.choices[0].message.content;
-                    
-                    // Yritetään irrottaa kuva-avainsana ja tekstisisältö
-                    let imageKeyword = 'learning'; // Oletusavainsana
-                    let cleanText = aiResponse;
-                    
-                    // Oletetaan, että tekoäly palauttaa Markdownina avainsanan esim. "Keyword: beach"
-                    const keywordMatch = aiResponse.match(/Keyword:\s*(\w+)/i);
-                    if (keywordMatch) {
-                        imageKeyword = keywordMatch[1];
-                        // Poistetaan avainsana varsinaisesta tekstistä
-                        cleanText = aiResponse.replace(/Keyword:\s*\w+\s*/i, '');
-                    }
+                let content = data.choices[0].message.content;
+                
+                // Etsi kuva-avainsana
+                const keywordMatch = content.match(/Keyword:\s*(\w+)/i);
+                const keyword = keywordMatch ? keywordMatch[1] : 'learning';
+                const cleanText = content.replace(/Keyword:.*?\n/i, '');
+                const imageUrl = `https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?auto=format&fit=crop&w=600&q=80`; // Dummy fallback
+                const dynamicImg = `https://source.unsplash.com/600x400/?${keyword},${langName}`;
 
-                    // Kuvan URL (satunnainen kuva Unsplashista aiheen perusteella)
-                    const imageUrl = `https://source.unsplash.com/featured/?${imageKeyword},${type}`;
-
-                    output.innerHTML = `
-                        <div class="flex flex-col md:flex-row gap-6">
-                            <div class="md:w-1/3 flex-shrink-0">
-                                <img src="${imageUrl}" alt="${imageKeyword}" class="w-full h-auto rounded-2xl shadow-md border-4 border-white mb-4">
-                                <p class="text-xs text-center text-gray-400">Kuva-aihe: ${imageKeyword} (Unsplash)</p>
-                            </div>
-                            <div class="md:w-2/3 prose lg:prose-xl whitespace-pre-wrap text-gray-800">
-                                ${cleanText}
-                            </div>
-                        </div>
-                    `;
-                }
+                output.innerHTML = `
+                    <div class="comic-box mb-6 shadow-lg">
+                        <img src="${dynamicImg}" class="w-full h-64 object-cover border-b-2 border-slate-800" onerror="this.src='https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600'">
+                    </div>
+                    <div id="lessonText" class="prose max-w-none text-slate-800">
+                        ${cleanText}
+                    </div>
+                `;
+                
+                document.getElementById('controls').classList.remove('hidden');
+                saveStat();
 
             } catch (err) {
-                output.innerHTML = `<div class="text-red-600 font-bold">Yhteysvirhe: ${err.message}</div>`;
+                output.innerHTML = `<div class="p-4 bg-red-100 text-red-700 rounded-xl"><b>Virhe:</b> ${err.message}</div>`;
             }
+        }
+
+        function speakText() {
+            const text = document.getElementById('lessonText').innerText;
+            const langCode = document.getElementById('langSelect').value;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = langs[langCode].speech;
+            utterance.rate = 0.8; // Hieman hitaampi puhe
+            window.speechSynthesis.speak(utterance);
         }
     </script>
 </body>
-</html> 
+</html>
