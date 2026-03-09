@@ -4,64 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kieli-Treeni AI</title>
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .loading { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-        .highlight { background-color: #fef08a; padding: 2px; border-radius: 4px; color: black; }
+        .highlight { background-color: #fef08a; border-radius: 4px; color: black; }
     </style>
 </head>
 <body class="bg-slate-950 min-h-screen text-slate-100 font-sans">
 
-    <div class="max-w-2xl mx-auto py-6 px-4">
-        <div class="bg-slate-900 p-5 rounded-3xl border border-slate-800 shadow-2xl mb-6 flex justify-between items-center">
+    <div class="max-w-xl mx-auto py-6 px-4">
+        <div class="bg-slate-900 p-4 rounded-3xl mb-6 flex justify-between items-center border border-slate-800 shadow-xl">
             <div>
-                <h1 id="headerTitle" class="text-xl font-black text-yellow-500 italic">🇪🇸 Aprendemos Español!</h1>
-                <div class="flex gap-4 mt-1 text-[10px] font-mono text-slate-500 uppercase">
-                    <span>🔥 Putki: <b id="statStreak" class="text-green-500">0</b> pv</span>
-                    <span>✅ Valmis: <b id="statTotal" class="text-blue-500">0</b> kpl</span>
+                <h1 id="headerTitle" class="font-black text-yellow-500 italic">🇪🇸 Aprendemos!</h1>
+                <div class="flex gap-3 mt-1 text-[10px] font-mono text-slate-500">
+                    <span>🔥 PUTKI: <b id="statStreak">0</b></span>
+                    <span>✅ VALMIS: <b id="statTotal">0</b></span>
                 </div>
             </div>
-            <select id="targetLang" onchange="switchLang()" class="bg-slate-800 text-white p-2 rounded-xl text-xs border border-slate-700 outline-none">
+            <select id="targetLang" onchange="switchLang()" class="bg-slate-800 text-white p-2 rounded-xl text-xs border border-slate-700">
                 <option value="es">Espanja</option>
                 <option value="ja">Japani</option>
                 <option value="it">Italia</option>
             </select>
         </div>
 
-        <div class="bg-white rounded-[2rem] overflow-hidden shadow-2xl border-b-8 border-slate-900">
+        <div class="bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border-b-8 border-slate-900">
             <div class="grid grid-cols-3 gap-1 p-2 bg-slate-100 border-b border-slate-200">
-                <button onclick="run('news')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-md transition-all active:scale-95">Uutiset</button>
-                <button onclick="run('story')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl shadow-md transition-all active:scale-95">Sarjakuva</button>
-                <button onclick="run('chat')" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-2xl shadow-md transition-all active:scale-95">Chatti</button>
+                <button onclick="run('uutinen')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all active:scale-95 shadow-md text-sm">Uutiset</button>
+                <button onclick="run('sarjakuva')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl transition-all active:scale-95 shadow-md text-sm">Sarjakuva</button>
+                <button onclick="run('chatti')" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-2xl transition-all active:scale-95 shadow-md text-sm">Chatti</button>
             </div>
 
             <div id="display" class="p-6 text-slate-900 min-h-[400px]">
                 <div class="text-center py-20 text-slate-300">
-                    <p class="text-8xl mb-4">📖</p>
-                    <p class="font-bold text-slate-400 italic text-xl">Paina nappia, niin luodaan kuva ja teksti!</p>
+                    <p class="text-7xl mb-4">📖</p>
+                    <p class="font-bold text-slate-400 italic">Paina nappia ylhäältä!</p>
                 </div>
             </div>
 
             <div id="audioBox" class="hidden p-6 bg-slate-50 border-t border-slate-100 flex flex-col items-center gap-4">
-                <div class="w-full max-w-xs">
-                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase italic mb-1">
-                        <span>Hitaasti</span>
-                        <span>Nopeasti</span>
-                    </div>
-                    <input type="range" id="speechRate" min="0.3" max="1.0" step="0.1" value="0.7" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-900">
-                </div>
-                <button onclick="speak()" class="bg-slate-950 text-white w-full max-w-xs py-4 rounded-2xl font-black text-lg shadow-xl hover:bg-black transition-all flex items-center justify-center gap-3">
+                <input type="range" id="speechRate" min="0.3" max="1.0" step="0.1" value="0.7" class="w-full h-2 bg-slate-200 rounded-lg accent-slate-900">
+                <button onclick="speak()" class="bg-slate-950 text-white w-full py-4 rounded-2xl font-black text-lg shadow-xl flex items-center justify-center gap-3">
                     🔊 LUE ÄÄNEEN
                 </button>
             </div>
         </div>
 
-        <div class="mt-6">
+        <div class="mt-6 text-center">
             <details class="group">
-                <summary class="list-none cursor-pointer text-center text-slate-600 text-[10px] font-bold uppercase tracking-widest">⚙️ ASETUKSET</summary>
-                <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 mt-4">
-                    <input type="password" id="apiInput" placeholder="Syötä API-avain (sk-or-v1...)" class="w-full bg-black border border-slate-800 p-3 rounded-xl text-white text-sm outline-none focus:border-yellow-600">
+                <summary class="list-none cursor-pointer text-slate-600 text-[10px] font-bold uppercase tracking-widest">⚙️ API-AVAIN</summary>
+                <div class="mt-4 bg-slate-900 p-4 rounded-2xl border border-slate-800">
+                    <input type="password" id="apiInput" placeholder="sk-or-v1..." class="w-full bg-black border border-slate-800 p-3 rounded-xl text-white text-sm outline-none">
                 </div>
             </details>
         </div>
@@ -69,47 +63,45 @@
 
     <script>
         const langs = {
-            es: { title: '🇪🇸 Aprendemos Español!', voice: 'es-ES', name: 'Spanish' },
-            ja: { title: '🇯🇵 日本語を学びましょう!', voice: 'ja-JP', name: 'Japanese' },
-            it: { title: '🇮🇹 Impariamo l’Italiano!', voice: 'it-IT', name: 'Italian' }
+            es: { v: 'es-ES', n: 'Spanish' },
+            ja: { v: 'ja-JP', n: 'Japanese' },
+            it: { v: 'it-IT', n: 'Italian' }
         };
 
-        document.getElementById('apiInput').value = localStorage.getItem('user_key_vfinal') || '';
-        refreshStats();
+        document.getElementById('apiInput').value = localStorage.getItem('user_key_v3') || '';
+        stats();
 
         function switchLang() {
-            const l = document.getElementById('targetLang').value;
-            document.getElementById('headerTitle').innerText = langs[l].title;
             document.getElementById('display').innerHTML = '<div class="text-center py-20 text-slate-300 italic">Kieli vaihdettu.</div>';
             document.getElementById('audioBox').classList.add('hidden');
         }
 
-        function refreshStats() {
-            const s = JSON.parse(localStorage.getItem('user_stats_vfinal') || '{"total":0,"streak":0,"last":""}');
+        function stats() {
+            const s = JSON.parse(localStorage.getItem('user_stats_v3') || '{"total":0,"streak":0,"last":""}');
             document.getElementById('statTotal').innerText = s.total;
             document.getElementById('statStreak').innerText = s.streak;
         }
 
         async function run(type) {
             const key = document.getElementById('apiInput').value.trim();
-            const lang = document.getElementById('targetLang').value;
-            if (!key) return alert("API-AVAIN PUUTTUU!");
-            localStorage.setItem('user_key_vfinal', key);
+            if (!key) return alert("Anna API-avain!");
+            localStorage.setItem('user_key_v3', key);
 
+            const lang = document.getElementById('targetLang').value;
             const display = document.getElementById('display');
-            display.innerHTML = `<div class="loading text-center py-20 font-black text-slate-400 italic text-xl">AI LUO KUVAA JA TEKSTIÄ...</div>`;
+            display.innerHTML = `<div class="loading text-center py-20 font-black text-slate-400 italic">Ladataan...</div>`;
             document.getElementById('audioBox').classList.add('hidden');
 
-            const prompt = `Create a short ${type} for a student learning ${langs[lang].name}. 
-            Format exactly like this:
-            IMAGE: [one English noun for the picture]
-            TITLE: [title]
-            STORY: [text in ${langs[lang].name}]
-            FINNISH: [translation]
-            WORDS: [5 words in ${langs[lang].name} - Finnish]`;
+            const prompt = `Task: Create a ${type} in ${langs[lang].n}. 
+            Structure your response as follows (no markdown blocks):
+            TITLE: (title)
+            IMAGE: (one English word for a picture)
+            TEXT: (story in ${langs[lang].n})
+            FIN: (Finnish translation)
+            VOC: (5 words in ${langs[lang].n} - Finnish)`;
 
             try {
-                const response = await fetch("[https://openrouter.ai/api/v1/chat/completions](https://openrouter.ai/api/v1/chat/completions)", {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
                     body: JSON.stringify({
@@ -121,51 +113,54 @@
                 const data = await response.json();
                 const raw = data.choices[0].message.content;
 
-                const getP = (tag) => {
-                    const parts = raw.split(tag + ':');
-                    return parts.length > 1 ? parts[1].split('\n')[0].trim() : '';
-                };
-                
-                // Erityiskäsittely Storylle ja sanoille (voivat olla usealla rivillä)
-                const getLongP = (tag, nextTag) => {
-                    const start = raw.indexOf(tag + ':');
-                    const end = nextTag ? raw.indexOf(nextTag + ':') : raw.length;
-                    if(start === -1) return '';
-                    return raw.substring(start + tag.length + 1, end).trim();
-                };
+                // Erittäin varma erottelu
+                const parts = raw.split('\n');
+                let title = '', imgWord = 'culture', story = '', fin = '', voc = '';
 
-                const keyword = getP('IMAGE') || 'book';
-                // UUSI VARMA KUVAPALVELU:
-                const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(keyword)}?width=800&height=450&seed=${Math.floor(Math.random()*1000)}&nologo=true`;
+                parts.forEach(line => {
+                    if (line.startsWith('TITLE:')) title = line.replace('TITLE:', '').trim();
+                    if (line.startsWith('IMAGE:')) imgWord = line.replace('IMAGE:', '').replace(/[\[\]]/g, '').trim();
+                    if (line.startsWith('TEXT:')) story = line.replace('TEXT:', '').trim();
+                    if (line.startsWith('FIN:')) fin = line.replace('FIN:', '').trim();
+                    if (line.startsWith('VOC:')) voc = line.replace('VOC:', '').trim();
+                });
+
+                // Jos TEXT oli tyhjä, kokeillaan etsiä se laajemmalla haulla
+                if (!story) {
+                    const match = raw.match(/TEXT:(.*?)FIN:/is);
+                    story = match ? match[1].trim() : raw.substring(0, 100);
+                }
+
+                const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(imgWord)}?width=800&height=450&seed=${Math.floor(Math.random()*999)}&nologo=true`;
 
                 display.innerHTML = `
-                    <div class="mb-6 rounded-3xl overflow-hidden shadow-xl border-4 border-slate-50 bg-slate-200">
-                        <img src="${imgUrl}" class="w-full h-56 object-cover" alt="${keyword}" onload="this.style.opacity=1" style="opacity:0; transition: opacity 0.5s;">
+                    <div class="mb-6 rounded-2xl overflow-hidden shadow-lg border-4 border-slate-50 bg-slate-100">
+                        <img src="${imgUrl}" class="w-full h-48 object-cover" alt="illustration">
                     </div>
-                    <h2 class="text-2xl font-black text-slate-900 mb-4 tracking-tight">${getP('TITLE')}</h2>
-                    <div id="mainText" class="p-5 bg-yellow-50 rounded-2xl border-l-8 border-yellow-400 text-lg italic mb-6 text-slate-800 shadow-inner">
-                        ${getLongP('STORY', 'FINNISH').replace(/\n/g, '<br>')}
+                    <h2 class="text-2xl font-black text-slate-900 mb-2 leading-tight">${title}</h2>
+                    <div id="mainText" class="p-5 bg-yellow-50 rounded-2xl border-l-8 border-yellow-400 text-lg italic mb-6 shadow-inner text-slate-800">
+                        ${story.replace(/\n/g, '<br>')}
                     </div>
                     <div class="space-y-4">
-                        <p class="text-slate-600 text-sm italic"><b class="text-[10px] uppercase text-slate-400 block mb-1">Suomennos</b>${getLongP('FINNISH', 'WORDS').replace(/\n/g, '<br>')}</p>
+                        <p class="text-slate-500 text-sm italic leading-relaxed"><b class="text-[10px] block mb-1">SUOMENNOS</b>${fin}</p>
                         <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                            <b class="text-[10px] uppercase text-slate-400 block mb-2">Sanasto</b>
-                            <p class="text-xs font-mono text-slate-700">${getLongP('WORDS', null).replace(/\n/g, '<br>')}</p>
+                            <b class="text-[10px] block mb-2 text-slate-400">SANASTO</b>
+                            <p class="text-xs font-mono text-slate-700">${voc.replace(/\n/g, '<br>')}</p>
                         </div>
                     </div>
                 `;
 
                 document.getElementById('audioBox').classList.remove('hidden');
                 
-                let s = JSON.parse(localStorage.getItem('user_stats_vfinal') || '{"total":0,"streak":0,"last":""}');
+                let s = JSON.parse(localStorage.getItem('user_stats_v3') || '{"total":0,"streak":0,"last":""}');
                 const today = new Date().toDateString();
                 s.total++;
                 if (s.last !== today) { s.streak++; s.last = today; }
-                localStorage.setItem('user_stats_vfinal', JSON.stringify(s));
-                refreshStats();
+                localStorage.setItem('user_stats_v3', JSON.stringify(s));
+                stats();
 
             } catch (err) {
-                display.innerHTML = `<div class="p-6 bg-red-50 text-red-600 rounded-2xl border font-bold italic">❌ Hups! Jokin meni vikaan. Kokeile uudestaan.</div>`;
+                display.innerHTML = `<div class="p-6 text-red-600 font-bold">Virhe: ${err.message}</div>`;
             }
         }
 
@@ -175,7 +170,7 @@
             const rate = document.getElementById('speechRate').value;
             window.speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance(text);
-            u.lang = langs[lang].voice;
+            u.lang = langs[lang].v;
             u.rate = rate;
             u.onstart = () => document.getElementById('mainText').classList.add('highlight');
             u.onend = () => document.getElementById('mainText').classList.remove('highlight');
