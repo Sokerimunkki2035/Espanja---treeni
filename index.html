@@ -9,6 +9,7 @@
         .loading { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
         .highlight { background-color: #fef08a; border-radius: 4px; color: black; }
+        #notesBox { min-height: 100px; resize: vertical; }
     </style>
 </head>
 <body class="bg-slate-950 min-h-screen text-slate-100 font-sans">
@@ -67,6 +68,8 @@
             it: { v: 'it-IT', n: 'Italian' }
         };
 
+        let chatHistory = [];
+
         document.getElementById('apiInput').value = localStorage.getItem('user_key_v3') || '';
         stats();
 
@@ -91,13 +94,19 @@
             display.innerHTML = `<div class="loading text-center py-20 font-black text-slate-400 italic">Ladataan...</div>`;
             document.getElementById('audioBox').classList.add('hidden');
 
-            const prompt = `Task: Create a ${type} in ${langs[lang].n}.
-            Structure your response as follows (no markdown blocks):
-            TITLE: (title)
-            IMAGE: (one English word for a picture)
-            TEXT: (story in ${langs[lang].n})
-            FIN: (Finnish translation)
-            VOC: (5 words in ${langs[lang].n} - Finnish)`;
+            let prompt;
+            if (type === 'chatti') {
+                prompt = `Act as a helpful ${langs[lang].n} language tutor. Start a conversation with me in ${langs[lang].n} at B1 level. Ask me questions, give me exercises, and correct my mistakes. Keep the conversation going and adapt to my level. Only respond in ${langs[lang].n} unless I ask for translation.`;
+                chatHistory = [];
+            } else {
+                prompt = `Task: Create a ${type} in ${langs[lang].n}.
+                Structure your response as follows (no markdown blocks):
+                TITLE: (title)
+                IMAGE: (one English word for a picture)
+                TEXT: (story in ${langs[lang].n})
+                FIN: (Finnish translation)
+                VOC: (5 words in ${langs[lang].n} - Finnish)`;
+            }
 
             try {
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -115,38 +124,35 @@
                 const data = await response.json();
                 const raw = data.choices[0].message.content;
 
-                // Robust parsing with regex
-                const parseSection = (regex) => {
-                    const match = raw.match(regex);
-                    return match ? match[1].trim() : '';
-                };
+                if (type === 'chatti') {
+                    chatHistory.push({ role: "assistant", content: raw });
+                    renderChat();
+                } else {
+                    const title = parseSection(/TITLE:\s*(.*?)\s*(?=IMAGE:|TEXT:|FIN:|VOC:|$)/is, raw);
+                    const imgWord = parseSection(/IMAGE:\s*([^\s\[\]]+)/i, raw) || 'culture';
+                    const story = parseSection(/TEXT:\s*(.*?)\s*(?=FIN:|VOC:|$)/is, raw);
+                    const fin = parseSection(/FIN:\s*(.*?)\s*(?=VOC:|$)/is, raw);
 
-                const title = parseSection(/TITLE:\s*(.*?)\s*(?=IMAGE:|TEXT:|FIN:|VOC:|$)/is);
-                const imgWord = parseSection(/IMAGE:\s*([^\s\[\]]+)/i) || 'culture';
-                const story = parseSection(/TEXT:\s*(.*?)\s*(?=FIN:|VOC:|$)/is);
-                const fin = parseSection(/FIN:\s*(.*?)\s*(?=VOC:|$)/is);
-                const voc = parseSection(/VOC:\s*(.*)/is);
+                    const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(imgWord)}?width=800&height=450&seed=${Math.floor(Math.random()*999)}&nologo=true`;
 
-                const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(imgWord)}?width=800&height=450&seed=${Math.floor(Math.random()*999)}&nologo=true`;
-
-                display.innerHTML = `
-                    <div class="mb-6 rounded-2xl overflow-hidden shadow-lg border-4 border-slate-50 bg-slate-100">
-                        <img src="${imgUrl}" class="w-full h-48 object-cover" alt="illustration">
-                    </div>
-                    <h2 class="text-2xl font-black text-slate-900 mb-2 leading-tight">${title || 'Otsikko puuttuu'}</h2>
-                    <div id="mainText" class="p-5 bg-yellow-50 rounded-2xl border-l-8 border-yellow-400 text-lg italic mb-6 shadow-inner text-slate-800">
-                        ${story.replace(/\n/g, '<br>') || '<em>Tarina puuttuu</em>'}
-                    </div>
-                    <div class="space-y-4">
-                        <p class="text-slate-500 text-sm italic leading-relaxed"><b class="text-[10px] block mb-1">SUOMENNOS</b>${fin || '<em>Käännös puuttuu</em>'}</p>
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                            <b class="text-[10px] block mb-2 text-slate-400">SANASTO</b>
-                            <p class="text-xs font-mono text-slate-700">${voc.replace(/\n/g, '<br>') || '<em>Sanasto puuttuu</em>'}</p>
+                    display.innerHTML = `
+                        <div class="mb-6 rounded-2xl overflow-hidden shadow-lg border-4 border-slate-50 bg-slate-100">
+                            <img src="${imgUrl}" class="w-full h-48 object-cover" alt="illustration">
                         </div>
-                    </div>
-                `;
-
-                document.getElementById('audioBox').classList.remove('hidden');
+                        <h2 class="text-2xl font-black text-slate-900 mb-2 leading-tight">${title || 'Otsikko puuttuu'}</h2>
+                        <div id="mainText" class="p-5 bg-yellow-50 rounded-2xl border-l-8 border-yellow-400 text-lg italic mb-6 shadow-inner text-slate-800">
+                            ${story.replace(/\n/g, '<br>') || '<em>Tarina puuttuu</em>'}
+                        </div>
+                        <div class="space-y-4">
+                            <p class="text-slate-500 text-sm italic leading-relaxed"><b class="text-[10px] block mb-1">SUOMENNOS</b>${fin || '<em>Käännös puuttuu</em>'}</p>
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                <b class="text-[10px] block mb-2 text-slate-400">OMAT MUISTINPANOT</b>
+                                <textarea id="notesBox" class="w-full p-2 bg-white border border-slate-300 rounded-lg text-sm outline-none" placeholder="Kirjoita tähän opittuja sanoja..."></textarea>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('audioBox').classList.remove('hidden');
+                }
 
                 let s = JSON.parse(localStorage.getItem('user_stats_v3') || '{"total":0,"streak":0,"last":""}');
                 const today = new Date().toDateString();
@@ -158,6 +164,70 @@
             } catch (err) {
                 display.innerHTML = `<div class="p-6 text-red-600 font-bold">Virhe: ${err.message}</div>`;
             }
+        }
+
+        function renderChat() {
+            const display = document.getElementById('display');
+            display.innerHTML = `
+                <div id="chatMessages" class="space-y-4 mb-4">
+                    ${chatHistory.map(msg => `
+                        <div class="p-3 rounded-xl ${msg.role === 'assistant' ? 'bg-slate-200 text-slate-800' : 'bg-slate-900 text-white'}">
+                            ${msg.content}
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="mt-4">
+                    <input type="text" id="userReply" placeholder="Vastaa täällä..." class="w-full p-3 border border-slate-300 rounded-xl outline-none">
+                    <button onclick="sendReply()" class="mt-2 bg-slate-950 text-white w-full py-3 rounded-xl font-bold">LÄHETÄ</button>
+                </div>
+            `;
+        }
+
+        async function sendReply() {
+            const reply = document.getElementById('userReply').value.trim();
+            if (!reply) return;
+
+            const display = document.getElementById('display');
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML += `
+                <div class="p-3 rounded-xl bg-slate-900 text-white">Sinä: ${reply}</div>
+            `;
+            document.getElementById('userReply').value = '';
+
+            chatHistory.push({ role: "user", content: reply });
+
+            const key = document.getElementById('apiInput').value.trim();
+            const lang = document.getElementById('targetLang').value;
+
+            try {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${key}`
+                    },
+                    body: JSON.stringify({
+                        "model": "google/gemini-2.0-flash-001",
+                        "messages": [
+                            { "role": "system", "content": `Act as a helpful ${langs[lang].n} language tutor. Keep the conversation going and adapt to my level.` },
+                            ...chatHistory
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                const assistantReply = data.choices[0].message.content;
+                chatHistory.push({ role: "assistant", content: assistantReply });
+                renderChat();
+
+            } catch (err) {
+                chatMessages.innerHTML += `<div class="p-3 rounded-xl bg-red-200 text-red-800">Virhe: ${err.message}</div>`;
+            }
+        }
+
+        function parseSection(regex, text) {
+            const match = text.match(regex);
+            return match ? match[1].trim() : '';
         }
 
         function speak() {
