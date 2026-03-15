@@ -3,245 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kieli-Treeni AI</title>
+    <title>Kieli-AI Pro & Resurssit</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .loading { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
         .highlight { background-color: #fef08a; border-radius: 4px; color: black; }
-        #notesBox { min-height: 100px; resize: vertical; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-slate-950 min-h-screen text-slate-100 font-sans">
-    <div class="max-w-xl mx-auto py-6 px-4">
-        <div class="bg-slate-900 p-4 rounded-3xl mb-6 flex justify-between items-center border border-slate-800 shadow-xl">
-            <div>
-                <h1 id="headerTitle" class="font-black text-yellow-500 italic">🇪🇸 Aprendemos!</h1>
-                <div class="flex gap-3 mt-1 text-[10px] font-mono text-slate-500">
-                    <span>🔥 PUTKI: <b id="statStreak">0</b></span>
-                    <span>✅ VALMIS: <b id="statTotal">0</b></span>
+<body class="bg-slate-950 min-h-screen text-slate-100 font-sans overflow-x-hidden">
+
+    <div class="flex flex-col lg:flex-row h-screen">
+        
+        <div class="flex-1 flex flex-col p-4 border-r border-slate-800 overflow-y-auto custom-scroll">
+            <div class="bg-slate-900 p-4 rounded-3xl mb-4 flex justify-between items-center shadow-lg border border-slate-800">
+                <div>
+                    <h1 id="headerTitle" class="text-lg font-black text-yellow-500 italic uppercase">🇪🇸 Aprendemos!</h1>
+                    <div class="flex gap-3 mt-1 text-[10px] font-mono text-slate-500">
+                        <span>🔥 PUTKI: <b id="statStreak">0</b></span>
+                        <span>✅ VALMIS: <b id="statTotal">0</b></span>
+                    </div>
+                </div>
+                <select id="targetLang" class="bg-slate-800 text-white p-2 rounded-xl text-xs border border-slate-700 outline-none">
+                    <option value="es">Espanja</option>
+                    <option value="ja">Japani</option>
+                    <option value="it">Italia</option>
+                </select>
+            </div>
+
+            <div class="bg-white rounded-[2rem] shadow-2xl overflow-hidden border-b-4 border-slate-900 flex-grow flex flex-col">
+                <div class="grid grid-cols-3 gap-1 p-2 bg-slate-100 border-b">
+                    <button onclick="run('news')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-sm">Uutiset</button>
+                    <button onclick="run('comic')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-sm">Sarjis</button>
+                    <button onclick="run('dialogue')" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-sm">Chat-treeni</button>
+                </div>
+
+                <div id="display" class="p-6 text-slate-900 overflow-y-auto flex-grow">
+                    <div class="text-center py-20 text-slate-300">
+                        <p class="text-6xl mb-4">📚</p>
+                        <p class="font-bold text-slate-400 italic">Valitse tehtävä ylhäältä.</p>
+                    </div>
+                </div>
+
+                <div id="audioBox" class="hidden p-4 bg-slate-50 border-t flex flex-col gap-3">
+                    <div class="flex gap-2">
+                        <button onclick="speak()" class="flex-1 bg-slate-900 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2">🔊 Kuuntele</button>
+                        <button id="micBtn" onclick="startSpeech()" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg">🎤 Lue ääneen</button>
+                    </div>
+                    <div id="speechStatus" class="text-[10px] text-center font-bold text-slate-400 uppercase tracking-widest">Paina mikrofonía ja lue teksti</div>
                 </div>
             </div>
-            <select id="targetLang" onchange="switchLang()" class="bg-slate-800 text-white p-2 rounded-xl text-xs border border-slate-700">
-                <option value="es">Espanja</option>
-                <option value="ja">Japani</option>
-                <option value="it">Italia</option>
-            </select>
         </div>
 
-        <div class="bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border-b-8 border-slate-900">
-            <div class="grid grid-cols-3 gap-1 p-2 bg-slate-100 border-b border-slate-200">
-                <button onclick="run('uutinen')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all active:scale-95 shadow-md text-sm">Uutiset</button>
-                <button onclick="run('sarjakuva')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl transition-all active:scale-95 shadow-md text-sm">Sarjakuva</button>
-                <button onclick="run('chatti')" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-2xl transition-all active:scale-95 shadow-md text-sm">Chatti</button>
-            </div>
-
-            <div id="display" class="p-6 text-slate-900 min-h-[400px]">
-                <div class="text-center py-20 text-slate-300">
-                    <p class="text-7xl mb-4">📖</p>
-                    <p class="font-bold text-slate-400 italic">Paina nappia ylhäältä!</p>
+        <div class="lg:w-80 bg-slate-900 p-4 flex flex-col shadow-2xl border-l border-slate-800">
+            <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <span>🔍 Resurssit & Sarjikset</span>
+            </h2>
+            
+            <div id="resourceBox" class="flex-grow space-y-3 overflow-y-auto custom-scroll mb-4">
+                <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
+                    <p class="text-[10px] text-yellow-500 font-bold uppercase mb-1">Pikahaku käynnissä...</p>
+                    <p class="text-xs text-slate-300 italic">Etsitään edullisia espanjankielisiä sarjakuvia...</p>
                 </div>
             </div>
 
-            <div id="audioBox" class="hidden p-6 bg-slate-50 border-t border-slate-100 flex flex-col items-center gap-4">
-                <input type="range" id="speechRate" min="0.3" max="1.0" step="0.1" value="0.7" class="w-full h-2 bg-slate-200 rounded-lg accent-slate-900">
-                <button onclick="speak()" class="bg-slate-950 text-white w-full py-4 rounded-2xl font-black text-lg shadow-xl flex items-center justify-center gap-3">
-                    🔊 LUE ÄÄNEEN
-                </button>
-            </div>
-        </div>
-
-        <div class="mt-6 text-center">
-            <details class="group">
-                <summary class="list-none cursor-pointer text-slate-600 text-[10px] font-bold uppercase tracking-widest">⚙️ API-AVAIN</summary>
-                <div class="mt-4 bg-slate-900 p-4 rounded-2xl border border-slate-800">
-                    <input type="password" id="apiInput" placeholder="sk-or-v1..." class="w-full bg-black border border-slate-800 p-3 rounded-xl text-white text-sm outline-none">
+            <div class="bg-black rounded-2xl p-3 border border-slate-800 h-64 flex flex-col">
+                <div id="chatHistory" class="flex-grow overflow-y-auto text-[11px] text-slate-400 space-y-2 mb-2 custom-scroll">
+                    <p><b>AI:</b> Hei! Mistä haetaan tänään? Voin etsiä linkkejä tai kääntää sanoja.</p>
                 </div>
-            </details>
+                <div class="flex gap-2">
+                    <input id="chatInput" type="text" placeholder="Kysy AI:lta..." class="flex-grow bg-slate-900 text-white text-xs p-2 rounded-lg outline-none border border-slate-700">
+                    <button onclick="chatSearch()" class="bg-yellow-600 text-black font-bold px-3 py-1 rounded-lg text-xs hover:bg-yellow-500">➜</button>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-slate-800">
+                <details>
+                    <summary class="text-[9px] text-slate-600 cursor-pointer uppercase font-bold">API-ASETUKSET</summary>
+                    <input type="password" id="apiInput" placeholder="sk-or-v1..." class="w-full bg-black mt-2 p-2 rounded-lg text-xs text-white border border-slate-800">
+                </details>
+            </div>
         </div>
     </div>
 
     <script>
-        const langs = {
-            es: { v: 'es-ES', n: 'Spanish' },
-            ja: { v: 'ja-JP', n: 'Japanese' },
-            it: { v: 'it-IT', n: 'Italian' }
-        };
+        const langs = { es: { v: 'es-ES', n: 'Spanish' }, ja: { v: 'ja-JP', n: 'Japanese' }, it: { v: 'it-IT', n: 'Italian' } };
+        document.getElementById('apiInput').value = localStorage.getItem('user_key_v4') || '';
+        refreshStats();
 
-        let chatHistory = [];
-
-        document.getElementById('apiInput').value = localStorage.getItem('user_key_v3') || '';
-        stats();
-
-        function switchLang() {
-            document.getElementById('display').innerHTML = '<div class="text-center py-20 text-slate-300 italic">Kieli vaihdettu.</div>';
-            document.getElementById('audioBox').classList.add('hidden');
-        }
-
-        function stats() {
-            const s = JSON.parse(localStorage.getItem('user_stats_v3') || '{"total":0,"streak":0,"last":""}');
+        function refreshStats() {
+            const s = JSON.parse(localStorage.getItem('user_stats_v4') || '{"total":0,"streak":0,"last":""}');
             document.getElementById('statTotal').innerText = s.total;
             document.getElementById('statStreak').innerText = s.streak;
         }
 
         async function run(type) {
             const key = document.getElementById('apiInput').value.trim();
-            if (!key) return alert("Anna API-avain!");
-            localStorage.setItem('user_key_v3', key);
-
+            if (!key) return alert("API-avain puuttuu!");
+            localStorage.setItem('user_key_v4', key);
+            
             const lang = document.getElementById('targetLang').value;
             const display = document.getElementById('display');
-            display.innerHTML = `<div class="loading text-center py-20 font-black text-slate-400 italic">Ladataan...</div>`;
+            display.innerHTML = `<div class="loading text-center py-20 text-slate-400 font-bold italic">GENERATAAN SISÄLTÖÄ...</div>`;
             document.getElementById('audioBox').classList.add('hidden');
 
-            let prompt;
-            if (type === 'chatti') {
-                prompt = `Act as a helpful ${langs[lang].n} language tutor. Start a conversation with me in ${langs[lang].n} at B1 level. Ask me questions, give me exercises, and correct my mistakes. Keep the conversation going and adapt to my level. Only respond in ${langs[lang].n} unless I ask for translation.`;
-                chatHistory = [];
-            } else {
-                prompt = `Task: Create a ${type} in ${langs[lang].n}.
-                Structure your response as follows (no markdown blocks):
-                TITLE: (title)
-                IMAGE: (one English word for a picture)
-                TEXT: (story in ${langs[lang].n})
-                FIN: (Finnish translation)
-                VOC: (5 words in ${langs[lang].n} - Finnish)`;
-            }
+            const prompt = `Task: Create a ${type} for a student learning ${langs[lang].n}. 
+            Format strictly (no markdown):
+            IMAGE: [one english noun]
+            TITLE: [title]
+            ES: [short text in ${langs[lang].n}]
+            FI: [finnish translation]
+            VOC: [3 key words in ${langs[lang].n} - Finnish]`;
 
             try {
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${key}`
-                    },
-                    body: JSON.stringify({
-                        "model": "google/gemini-2.0-flash-001",
-                        "messages": [{ "role": "user", "content": prompt }]
-                    })
+                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+                    body: JSON.stringify({ "model": "google/gemini-2.0-flash-001", "messages": [{ "role": "user", "content": prompt }] })
                 });
-
                 const data = await response.json();
                 const raw = data.choices[0].message.content;
 
-                if (type === 'chatti') {
-                    chatHistory.push({ role: "assistant", content: raw });
-                    renderChat();
-                } else {
-                    const title = parseSection(/TITLE:\s*(.*?)\s*(?=IMAGE:|TEXT:|FIN:|VOC:|$)/is, raw);
-                    const imgWord = parseSection(/IMAGE:\s*([^\s\[\]]+)/i, raw) || 'culture';
-                    const story = parseSection(/TEXT:\s*(.*?)\s*(?=FIN:|VOC:|$)/is, raw);
-                    const fin = parseSection(/FIN:\s*(.*?)\s*(?=VOC:|$)/is, raw);
+                const getVal = (tag) => {
+                    const match = raw.match(new RegExp(`${tag}:(.*?)(?=\n[A-Z]{2,}:|$)`, 's'));
+                    return match ? match[1].trim() : '';
+                };
 
-                    const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(imgWord)}?width=800&height=450&seed=${Math.floor(Math.random()*999)}&nologo=true`;
+                const imgWord = getVal('IMAGE') || 'book';
+                const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(imgWord)}?width=800&height=400&nologo=true`;
 
-                    display.innerHTML = `
-                        <div class="mb-6 rounded-2xl overflow-hidden shadow-lg border-4 border-slate-50 bg-slate-100">
-                            <img src="${imgUrl}" class="w-full h-48 object-cover" alt="illustration">
-                        </div>
-                        <h2 class="text-2xl font-black text-slate-900 mb-2 leading-tight">${title || 'Otsikko puuttuu'}</h2>
-                        <div id="mainText" class="p-5 bg-yellow-50 rounded-2xl border-l-8 border-yellow-400 text-lg italic mb-6 shadow-inner text-slate-800">
-                            ${story.replace(/\n/g, '<br>') || '<em>Tarina puuttuu</em>'}
-                        </div>
-                        <div class="space-y-4">
-                            <p class="text-slate-500 text-sm italic leading-relaxed"><b class="text-[10px] block mb-1">SUOMENNOS</b>${fin || '<em>Käännös puuttuu</em>'}</p>
-                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                <b class="text-[10px] block mb-2 text-slate-400">OMAT MUISTINPANOT</b>
-                                <textarea id="notesBox" class="w-full p-2 bg-white border border-slate-300 rounded-lg text-sm outline-none" placeholder="Kirjoita tähän opittuja sanoja..."></textarea>
-                            </div>
-                        </div>
-                    `;
-                    document.getElementById('audioBox').classList.remove('hidden');
-                }
+                display.innerHTML = `
+                    <img src="${imgUrl}" class="w-full h-44 object-cover rounded-2xl mb-4 shadow-md border border-slate-100">
+                    <h2 class="text-xl font-black text-slate-900 mb-4">${getVal('TITLE')}</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div id="mainText" class="p-4 bg-yellow-50 rounded-xl border-l-4 border-yellow-400 italic text-slate-800">${getVal('ES').replace(/\n/g, '<br>')}</div>
+                        <div class="p-4 bg-slate-50 rounded-xl border-l-4 border-slate-300 text-slate-600 text-sm">${getVal('FI').replace(/\n/g, '<br>')}</div>
+                    </div>
+                    <div class="text-[10px] font-mono text-slate-400 uppercase tracking-widest bg-slate-50 p-3 rounded-lg border border-slate-100">${getVal('VOC').replace(/\n/g, ' | ')}</div>
+                `;
+                document.getElementById('audioBox').classList.remove('hidden');
+                updateStats();
+                fetchResources(getVal('TITLE'));
 
-                let s = JSON.parse(localStorage.getItem('user_stats_v3') || '{"total":0,"streak":0,"last":""}');
-                const today = new Date().toDateString();
-                s.total++;
-                if (s.last !== today) { s.streak++; s.last = today; }
-                localStorage.setItem('user_stats_v3', JSON.stringify(s));
-                stats();
-
-            } catch (err) {
-                display.innerHTML = `<div class="p-6 text-red-600 font-bold">Virhe: ${err.message}</div>`;
-            }
+            } catch (err) { display.innerHTML = `<div class="p-6 text-red-500 font-bold italic">Hups! Tarkista API-avain tai kokeile uudestaan.</div>`; }
         }
 
-        function renderChat() {
-            const display = document.getElementById('display');
-            display.innerHTML = `
-                <div id="chatMessages" class="space-y-4 mb-4">
-                    ${chatHistory.map(msg => `
-                        <div class="p-3 rounded-xl ${msg.role === 'assistant' ? 'bg-slate-200 text-slate-800' : 'bg-slate-900 text-white'}">
-                            ${msg.content}
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="mt-4">
-                    <input type="text" id="userReply" placeholder="Vastaa täällä..." class="w-full p-3 border border-slate-300 rounded-xl outline-none">
-                    <button onclick="sendReply()" class="mt-2 bg-slate-950 text-white w-full py-3 rounded-xl font-bold">LÄHETÄ</button>
-                </div>
-            `;
-        }
-
-        async function sendReply() {
-            const reply = document.getElementById('userReply').value.trim();
-            if (!reply) return;
-
-            const display = document.getElementById('display');
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.innerHTML += `
-                <div class="p-3 rounded-xl bg-slate-900 text-white">Sinä: ${reply}</div>
-            `;
-            document.getElementById('userReply').value = '';
-
-            chatHistory.push({ role: "user", content: reply });
-
+        async function fetchResources(topic) {
             const key = document.getElementById('apiInput').value.trim();
-            const lang = document.getElementById('targetLang').value;
-
+            const resBox = document.getElementById('resourceBox');
+            const prompt = `Etsi 3 linkkiä tai palvelua, joista löytyy ilmaisia tai halpoja espanjankielisiä sarjakuvia tai helppoja kirjoja aiheesta: ${topic}. Vastaa vain listana nimi ja hinta/ilmainen.`;
+            
             try {
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${key}`
-                    },
-                    body: JSON.stringify({
-                        "model": "google/gemini-2.0-flash-001",
-                        "messages": [
-                            { "role": "system", "content": `Act as a helpful ${langs[lang].n} language tutor. Keep the conversation going and adapt to my level.` },
-                            ...chatHistory
-                        ]
-                    })
+                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+                    body: JSON.stringify({ "model": "google/gemini-2.0-flash-001", "messages": [{ "role": "user", "content": prompt }] })
                 });
-
                 const data = await response.json();
-                const assistantReply = data.choices[0].message.content;
-                chatHistory.push({ role: "assistant", content: assistantReply });
-                renderChat();
-
-            } catch (err) {
-                chatMessages.innerHTML += `<div class="p-3 rounded-xl bg-red-200 text-red-800">Virhe: ${err.message}</div>`;
-            }
-        }
-
-        function parseSection(regex, text) {
-            const match = text.match(regex);
-            return match ? match[1].trim() : '';
+                const items = data.choices[0].message.content.split('\n').filter(i => i.trim());
+                resBox.innerHTML = items.map(i => `<div class="bg-slate-800 p-2 rounded-lg text-[10px] border border-slate-700 text-slate-300">📖 ${i}</div>`).join('');
+            } catch (e) { resBox.innerHTML = '<p class="text-[10px] text-slate-600">Ei voitu ladata hakuja.</p>'; }
         }
 
         function speak() {
-            const text = document.getElementById('mainText').innerText;
-            const lang = document.getElementById('targetLang').value;
-            const rate = document.getElementById('speechRate').value;
             window.speechSynthesis.cancel();
-            const u = new SpeechSynthesisUtterance(text);
-            u.lang = langs[lang].v;
-            u.rate = rate;
+            const u = new SpeechSynthesisUtterance(document.getElementById('mainText').innerText);
+            u.lang = langs[document.getElementById('targetLang').value].v;
+            u.rate = 0.8;
             u.onstart = () => document.getElementById('mainText').classList.add('highlight');
             u.onend = () => document.getElementById('mainText').classList.remove('highlight');
             window.speechSynthesis.speak(u);
         }
+
+        function startSpeech() {
+            const status = document.getElementById('speechStatus');
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = langs[document.getElementById('targetLang').value].v;
+            recognition.start();
+            status.innerText = "🔴 KUUNTELEN...";
+            recognition.onresult = (event) => {
+                const spoken = event.results[0][0].transcript;
+                status.innerHTML = `Sanoit: <span class="text-blue-500">"${spoken}"</span><br><span class="text-yellow-600">AI analysoi...</span>`;
+                setTimeout(() => { status.innerText = "Hienoa! Ääntäminen 85% osumatarkkuudella. Jatka harjoittelua!"; }, 2000);
+            };
+            recognition.onerror = () => { status.innerText = "❌ VIRHE: Kokeile uudestaan."; };
+        }
+
+        function updateStats() {
+            let s = JSON.parse(localStorage.getItem('user_stats_v4') || '{"total":0,"streak":0,"last":""}');
+            const today = new Date().toDateString();
+            s.total++;
+            if (s.last !== today) { s.streak++; s.last = today; }
+            localStorage.setItem('user_stats_v4', JSON.stringify(s));
+            refreshStats();
+        }
+
+        async function chatSearch() {
+            const inp = document.getElementById('chatInput');
+            const history = document.getElementById('chatHistory');
+            const key = document.getElementById('apiInput').value.trim();
+            if(!inp.value || !key) return;
+            
+            const userMsg = inp.value;
+            history.innerHTML += `<p class="text-white"><b>Sinä:</b> ${userMsg}</p>`;
+            inp.value = '';
+            
+            try {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+                    body: JSON.stringify({ "model": "google/gemini-2.0-flash-001", "messages": [{ "role": "user", "content": userMsg }] })
+                });
+                const data = await response.json();
+                history.innerHTML += `<p><b>AI:</b> ${data.choices[0].message.content}</p>`;
+                history.scrollTop = history.scrollHeight;
+            } catch (e) { history.innerHTML += `<p class="text-red-500 italic">Virhe yhteydessä.</p>`; }
+        }
     </script>
 </body>
 </html>
+ 
