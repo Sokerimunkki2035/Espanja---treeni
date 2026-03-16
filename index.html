@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aprendemos - Lite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loading { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        details > summary { list-style: none; cursor: pointer; }
+        details > summary::-webkit-details-marker { display: none; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans h-screen flex flex-col overflow-hidden">
+
+    <header class="p-2 bg-slate-900 border-b border-slate-800 flex justify-between items-center shadow-lg shrink-0">
+        <h1 class="text-sm font-black text-yellow-500 italic uppercase tracking-tighter">🇪🇸 Aprendemos!</h1>
+        <div class="flex gap-2">
+            <select id="targetLang" class="bg-slate-800 text-white px-2 py-1 rounded-lg text-[10px] border border-slate-700 outline-none">
+                <option value="es">Espanja</option>
+                <option value="ja">Japani</option>
+                <option value="it">Italia</option>
+            </select>
+            <button onclick="document.getElementById('apiSection').classList.toggle('hidden')" class="bg-slate-700 px-2 py-1 rounded-lg text-[10px]">⚙️</button>
+        </div>
+    </header>
+
+    <div id="apiSection" class="hidden p-3 bg-slate-900 border-b border-yellow-900/30 shrink-0">
+        <input type="password" id="apiInput" placeholder="API-avain (sk-or-v1...)" class="w-full bg-black p-2 rounded-xl text-xs text-white border border-slate-700 outline-none">
+    </div>
+
+    <main class="flex-grow overflow-y-auto custom-scroll p-3 flex flex-col gap-3">
+        
+        <nav class="grid grid-cols-3 gap-2 shrink-0">
+            <button onclick="run('news')" class="bg-blue-600 py-3 rounded-xl font-bold text-xs shadow-lg active:scale-95 transition-transform">Uutiset</button>
+            <button onclick="run('comic')" class="bg-emerald-600 py-3 rounded-xl font-bold text-xs shadow-lg active:scale-95 transition-transform">Sarjis</button>
+            <button onclick="run('dialogue')" class="bg-orange-600 py-3 rounded-xl font-bold text-xs shadow-lg active:scale-95 transition-transform">Treeni</button>
+        </nav>
+
+        <article id="display" class="bg-white rounded-2xl shadow-2xl p-4 text-slate-900 min-h-[50vh]">
+            <div class="text-center py-12 text-slate-300">
+                <p class="text-5xl mb-2">📖</p>
+                <p class="text-xs font-bold italic tracking-wide uppercase">Valitse sisältö ylhäältä</p>
+            </div>
+        </article>
+
+        <details class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shrink-0">
+            <summary class="p-3 text-[10px] font-black uppercase tracking-widest text-slate-500 flex justify-between items-center">
+                🔍 Lisälinkit & Resurssit <span>▼</span>
+            </summary>
+            <div id="resourceBox" class="p-3 border-t border-slate-800 space-y-2 text-[11px] text-slate-400 italic">
+                Ei aktiivisia linkkejä.
+            </div>
+        </details>
+
+        <details class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shrink-0 mb-4">
+            <summary class="p-3 text-[10px] font-black uppercase tracking-widest text-slate-500 flex justify-between items-center">
+                💬 Kysy AI-apua <span>▼</span>
+            </summary>
+            <div class="p-3 border-t border-slate-800 space-y-3">
+                <div id="chatHistory" class="max-h-40 overflow-y-auto text-[10px] space-y-2 mb-2 custom-scroll"></div>
+                <div class="flex gap-2">
+                    <input id="chatInput" type="text" placeholder="Kysy kielellä..." class="flex-grow bg-black p-2 rounded-lg text-xs outline-none border border-slate-700">
+                    <button onclick="chatSearch()" class="bg-yellow-500 text-black px-4 rounded-lg font-bold text-xs">➜</button>
+                </div>
+            </div>
+        </details>
+    </main>
+
+    <footer id="audioBox" class="hidden bg-slate-900 border-t border-slate-800 p-3 shrink-0 flex gap-2">
+        <button onclick="speak()" class="flex-1 bg-slate-100 text-slate-900 py-3 rounded-xl font-black text-xs shadow-inner">🔊 KUUNTELE</button>
+        <button onclick="startSpeech()" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-black text-xs shadow-lg">🎤 LUE ÄÄNEEN</button>
+    </footer>
+
+    <script>
+        const langs = { es: { v: 'es-ES', n: 'Spanish' }, ja: { v: 'ja-JP', n: 'Japanese' }, it: { v: 'it-IT', n: 'Italian' } };
+        document.getElementById('apiInput').value = localStorage.getItem('user_key_v7') || '';
+
+        async function run(type) {
+            const key = document.getElementById('apiInput').value.trim();
+            if (!key) return alert("Aseta API-avain ratas-ikonista!");
+            localStorage.setItem('user_key_v7', key);
+            
+            const lang = document.getElementById('targetLang').value;
+            const display = document.getElementById('display');
+            display.innerHTML = `<div class="loading text-center py-10 text-slate-400 font-bold italic uppercase text-[10px]">Generoidaan tekstiä...</div>`;
+            document.getElementById('audioBox').classList.add('hidden');
+
+            const prompt = `Task: Create a ${type} for a student learning ${langs[lang].n}. NO IMAGES. 
+            Format exactly:
+            TITLE: [title]
+            TARGET: [story in ${langs[lang].n}]
+            FI: [translation in Finnish]
+            VOC: [3 key words in Finnish]`;
+
+            try {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key.replace(/[^a-zA-Z0-9-]/g, '') },
+                    body: JSON.stringify({ "model": "google/gemini-2.0-flash-001", "messages": [{ "role": "user", "content": prompt }] })
+                });
+                const data = await response.json();
+                const raw = data.choices[0].message.content;
+
+                const getVal = (tag) => {
+                    const match = raw.match(new RegExp(`${tag}:(.*?)(?=\n[A-Z]{2,}:|$)`, 's'));
+                    return match ? match[1].trim() : '';
+                };
+
+                display.innerHTML = `
+                    <h2 class="text-xl font-black text-slate-900 mb-3 leading-tight border-b-2 border-yellow-400 pb-2">${getVal('TITLE')}</h2>
+                    <div id="mainText" class="p-3 bg-yellow-50 rounded-xl italic text-slate-800 text-lg mb-4 shadow-inner">${getVal('TARGET').replace(/\n/g, '<br>')}</div>
+                    <div class="p-3 bg-slate-50 rounded-xl text-slate-500 text-xs mb-4 border border-slate-100">${getVal('FI').replace(/\n/g, '<br>')}</div>
+                    <div class="text-[9px] font-mono text-slate-400 uppercase tracking-tighter"><b>Sanasto:</b> ${getVal('VOC')}</div>
+                `;
+                document.getElementById('audioBox').classList.remove('hidden');
+                fetchResources(getVal('TITLE'), key);
+            } catch (err) { display.innerHTML = `<div class="p-4 text-red-500 text-xs font-bold">Virhe yhteydessä. Tarkista avain.</div>`; }
+        }
+
+        async function fetchResources(topic, key) {
+            const resBox = document.getElementById('resourceBox');
+            resBox.innerHTML = 'Etsitään linkkejä aiheeseen...';
+            try {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key.replace(/[^a-zA-Z0-9-]/g, '') },
+                    body: JSON.stringify({ "model": "google/gemini-2.0-flash-001", "messages": [{ "role": "user", "content": `Listaa 3 linkkiä aiheeseen: ${topic} (esim. Amazon, YouTube). Vain lyhyt lista.` }] })
+                });
+                const data = await response.json();
+                resBox.innerHTML = data.choices[0].message.content.split('\n').map(i => `<div class="bg-slate-800 p-2 rounded-lg mb-1">🔗 ${i}</div>`).join('');
+            } catch (e) { resBox.innerHTML = 'Ei linkkejä saatavilla.'; }
+        }
+
+        function speak() {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(document.getElementById('mainText').innerText);
+            u.lang = langs[document.getElementById('targetLang').value].v;
+            u.rate = 0.8;
+            window.speechSynthesis.speak(u);
+        }
+
+        function startSpeech() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = langs[document.getElementById('targetLang').value].v;
+            recognition.start();
+            recognition.onresult = (e) => { alert("Sanoit: " + e.results[0][0].transcript); };
+        }
+
+        async function chatSearch() {
+            const inp = document.getElementById('chatInput');
+            const history = document.getElementById('chatHistory');
+            const key = document.getElementById('apiInput').value.trim();
+            if(!inp.value || !key) return;
+            history.innerHTML += `<div class="text-white text-right font-bold italic">"${inp.value}"</div>`;
+            const msg = inp.value; inp.value = '';
+            try {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key.replace(/[^a-zA-Z0-9-]/g, '') },
+                    body: JSON.stringify({ "model": "google/gemini-2.0-flash-001", "messages": [{ "role": "user", "content": msg }] })
+                });
+                const data = await response.json();
+                history.innerHTML += `<div class="bg-slate-800 p-2 rounded-lg">AI: ${data.choices[0].message.content}</div>`;
+                history.scrollTop = history.scrollHeight;
+            } catch (e) { history.innerHTML += `<div class="text-red-500">Virhe.</div>`; }
+        }
+    </script>
+</body>
+</html> 
