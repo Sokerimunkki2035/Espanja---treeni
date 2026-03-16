@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aprendemos - Pro Lite</title>
+    <title>Aprendemos - Clean Text</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .loading { animation: pulse 2s infinite; }
@@ -20,7 +20,7 @@
         <div class="flex justify-between items-center mb-2">
             <h1 class="text-xs font-black text-yellow-500 italic uppercase tracking-tighter">🇪🇸 Aprendemos!</h1>
             <div class="flex gap-2">
-                <select id="targetLang" class="bg-slate-800 px-2 py-1 rounded-lg text-[10px] outline-none">
+                <select id="targetLang" class="bg-slate-800 px-2 py-1 rounded-lg text-[10px] outline-none border border-slate-700">
                     <option value="es">Espanja</option>
                     <option value="ja">Japani</option>
                     <option value="it">Italia</option>
@@ -53,14 +53,14 @@
         </div>
 
         <div id="apiSection" class="hidden mt-2 p-2 bg-black rounded-lg border border-yellow-900/50">
-            <input type="password" id="apiInput" placeholder="API-avain täähän..." class="w-full bg-transparent p-1 text-[10px] text-white outline-none">
+            <input type="password" id="apiInput" placeholder="API-avain tähän..." class="w-full bg-transparent p-1 text-[10px] text-white outline-none">
         </div>
     </header>
 
     <main id="display" class="flex-grow overflow-y-auto custom-scroll p-4 bg-white text-slate-900 flex flex-col">
         <div class="text-center my-auto opacity-20 italic">
             <p class="text-6xl mb-2">📖</p>
-            <p>Valitse sisältö aloittaaksesi</p>
+            <p>Aloita valitsemalla sisältö</p>
         </div>
     </main>
 
@@ -71,22 +71,23 @@
 
     <script>
         const langs = { es: { v: 'es-ES', n: 'Spanish' }, ja: { v: 'ja-JP', n: 'Japanese' }, it: { v: 'it-IT', n: 'Italian' } };
-        document.getElementById('apiInput').value = localStorage.getItem('user_key_v8') || '';
+        document.getElementById('apiInput').value = localStorage.getItem('user_key_v10') || '';
 
         async function run(type) {
             const key = document.getElementById('apiInput').value.trim();
             if (!key) return alert("Aseta API-avain rattaasta!");
-            localStorage.setItem('user_key_v8', key);
+            localStorage.setItem('user_key_v10', key);
             
             const display = document.getElementById('display');
-            display.innerHTML = `<div class="loading text-center my-auto text-slate-400 font-bold uppercase text-[10px]">Generoidaan...</div>`;
+            display.innerHTML = `<div class="loading text-center my-auto text-slate-400 font-bold uppercase text-[10px]">Haetaan sisältöä...</div>`;
             document.getElementById('audioBox').classList.add('hidden');
 
-            const prompt = `Task: Create ${type} for student in ${langs[document.getElementById('targetLang').value].n}. NO IMAGES. 
-            TITLE: [title]
-            TARGET: [text]
-            FI: [suomennos]
-            VOC: [3 sanaa]`;
+            const prompt = `Luo ${type} opiskelijalle kielellä ${langs[document.getElementById('targetLang').value].n}. 
+            Käytä selkeitä kappaleita. ÄLÄ KÄYTÄ KUVIA TAI LIHAVOINTIA TEKSTISSÄ.
+            TITLE: [otsikko]
+            STORY: [kappaleittain jäsennelty teksti]
+            FI: [suomennos suomeksi]
+            VOC: [3 tärkeää sanaa]`;
 
             try {
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -102,20 +103,27 @@
                     return match ? match[1].trim() : '';
                 };
 
+                const mainContent = getVal('STORY') || getVal('TARGET');
+
                 display.innerHTML = `
-                    <h2 class="text-lg font-black text-slate-900 mb-2 border-b-2 border-yellow-400 pb-1 uppercase tracking-tighter">${getVal('TITLE')}</h2>
-                    <div id="mainText" class="p-3 bg-yellow-50 rounded-xl italic text-slate-800 text-lg leading-relaxed mb-4">${getVal('TARGET').replace(/\n/g, '<br>')}</div>
-                    <div class="p-3 bg-slate-50 rounded-lg text-slate-500 text-[11px] mb-4 border border-slate-100">${getVal('FI').replace(/\n/g, '<br>')}</div>
-                    <div class="mt-auto text-[9px] font-mono text-slate-400 uppercase"><b>Voc:</b> ${getVal('VOC')}</div>
+                    <h2 class="text-lg font-black text-slate-900 mb-3 border-b-2 border-yellow-400 pb-1 uppercase tracking-tight">${getVal('TITLE')}</h2>
+                    <div id="mainText" class="p-4 bg-yellow-50 rounded-xl font-normal text-slate-800 text-lg leading-relaxed mb-6 space-y-4 shadow-sm">
+                        ${mainContent.split('\n').filter(p => p.trim()).map(p => `<div>${p}</div>`).join('')}
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded-lg text-slate-500 text-[11px] mb-4 border border-slate-100 space-y-2">
+                        <b class="text-[9px] uppercase tracking-widest opacity-70">Suomennos:</b>
+                        <div class="font-normal italic">${getVal('FI').split('\n').filter(p => p.trim()).map(p => `<div>${p}</div>`).join('')}</div>
+                    </div>
+                    <div class="mt-auto p-2 bg-slate-100 rounded text-[9px] font-mono text-slate-500 uppercase border border-slate-200"><b>Sanasto:</b> ${getVal('VOC')}</div>
                 `;
                 document.getElementById('audioBox').classList.remove('hidden');
                 fetchResources(getVal('TITLE'), key);
-            } catch (err) { display.innerHTML = `<div class="p-4 text-red-500 text-xs">Virhe API-yhteydessä.</div>`; }
+            } catch (err) { display.innerHTML = `<div class="p-4 text-red-500 text-xs">Yhteysvirhe. Yritä uudelleen.</div>`; }
         }
 
         async function fetchResources(topic, key) {
             const resBox = document.getElementById('resourceBox');
-            resBox.innerHTML = 'Etsitään linkkejä...';
+            resBox.innerHTML = 'Haetaan linkkejä...';
             try {
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
@@ -123,8 +131,8 @@
                     body: JSON.stringify({ "model": "google/gemini-2.0-flash-001", "messages": [{ "role": "user", "content": `Listaa 3 linkkiä aiheeseen: ${topic}. Vain lista.` }] })
                 });
                 const data = await response.json();
-                resBox.innerHTML = data.choices[0].message.content.split('\n').map(i => `<div class="mb-1">🔗 ${i}</div>`).join('');
-            } catch (e) { resBox.innerHTML = 'Ei linkkejä.'; }
+                resBox.innerHTML = data.choices[0].message.content.split('\n').map(i => `<div class="mb-1 border-b border-slate-700 pb-1">🔗 ${i}</div>`).join('');
+            } catch (e) { resBox.innerHTML = 'Linkkejä ei löytynyt.'; }
         }
 
         function speak() {
@@ -147,7 +155,7 @@
             const history = document.getElementById('chatHistory');
             const key = document.getElementById('apiInput').value.trim();
             if(!inp.value || !key) return;
-            history.innerHTML += `<div class="text-white text-right font-bold italic">"${inp.value}"</div>`;
+            history.innerHTML += `<div class="text-white text-right font-normal italic">"${inp.value}"</div>`;
             const msg = inp.value; inp.value = '';
             try {
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -156,11 +164,10 @@
                     body: JSON.stringify({ "model": "google/gemini-2.0-flash-001", "messages": [{ "role": "user", "content": msg }] })
                 });
                 const data = await response.json();
-                history.innerHTML += `<div class="bg-slate-800 p-1 rounded">AI: ${data.choices[0].message.content}</div>`;
+                history.innerHTML += `<div class="bg-slate-800 p-1 rounded font-normal">AI: ${data.choices[0].message.content}</div>`;
                 history.scrollTop = history.scrollHeight;
             } catch (e) { history.innerHTML += `<div>Virhe.</div>`; }
         }
     </script>
 </body>
-</html>
- 
+</html> 
