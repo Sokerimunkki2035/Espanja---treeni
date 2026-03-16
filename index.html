@@ -1,3 +1,6 @@
+
+
+```html
 <!DOCTYPE html>
 <html lang="fi">
 <head>
@@ -6,8 +9,8 @@
     <title>Aprendemos - Clean Text</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .loading { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .loading { animation: pulse 2s infinite; }
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
         details > summary { list-style: none; }
@@ -70,19 +73,30 @@
     </footer>
 
     <script>
-        const langs = { es: { v: 'es-ES', n: 'Spanish' }, ja: { v: 'ja-JP', n: 'Japanese' }, it: { v: 'it-IT', n: 'Italian' } };
+        // Kieliasetukset
+        const langs = {
+            es: { v: 'es-ES', n: 'Spanish' },
+            ja: { v: 'ja-JP', n: 'Japanese' },
+            it: { v: 'it-IT', n: 'Italian' }
+        };
+
+        // Lataa tallennettu API-avain
         document.getElementById('apiInput').value = localStorage.getItem('user_key_v10') || '';
 
+        // Pääfunktio sisällön hakemiselle
         async function run(type) {
             const key = document.getElementById('apiInput').value.trim();
             if (!key) return alert("Aseta API-avain rattaasta!");
+
+            // Tallenna avain localStorageen
             localStorage.setItem('user_key_v10', key);
-            
+
             const display = document.getElementById('display');
             display.innerHTML = `<div class="loading text-center my-auto text-slate-400 font-bold uppercase text-[10px]">Haetaan sisältöä...</div>`;
             document.getElementById('audioBox').classList.add('hidden');
 
-            const prompt = `Luo ${type} opiskelijalle kielellä ${langs[document.getElementById('targetLang').value].n}. 
+            // Rakennetaan promptti
+            const prompt = `Luo ${type} opiskelijalle kielellä ${langs[document.getElementById('targetLang').value].n}.
             Käytä selkeitä kappaleita. ÄLÄ KÄYTÄ KUVIA TAI LIHAVOINTIA TEKSTISSÄ.
             TITLE: [otsikko]
             STORY: [kappaleittain jäsennelty teksti]
@@ -92,12 +106,25 @@
             try {
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key.replace(/[^a-zA-Z0-9-]/g, '') },
-                    body: JSON.stringify({ "model": "google/gemini-2.0-flash-001", "messages": [{ "role": "user", "content": prompt }] })
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${key}`
+                    },
+                    body: JSON.stringify({
+                        "model": "google/gemini-2.0-flash-001",
+                        "messages": [{ "role": "user", "content": prompt }]
+                    })
                 });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || "API-virhe");
+                }
+
                 const data = await response.json();
                 const raw = data.choices[0].message.content;
 
+                // Apufunktio tietyn tagin sisällön hakemiseen
                 const getVal = (tag) => {
                     const match = raw.match(new RegExp(`${tag}:(.*?)(?=\n[A-Z]{2,}:|$)`, 's'));
                     return match ? match[1].trim() : '';
@@ -105,6 +132,7 @@
 
                 const mainContent = getVal('STORY') || getVal('TARGET');
 
+                // Näytetään sisältö
                 display.innerHTML = `
                     <h2 class="text-lg font-black text-slate-900 mb-3 border-b-2 border-yellow-400 pb-1 uppercase tracking-tight">${getVal('TITLE')}</h2>
                     <div id="mainText" class="p-4 bg-yellow-50 rounded-xl font-normal text-slate-800 text-lg leading-relaxed mb-6 space-y-4 shadow-sm">
@@ -116,25 +144,59 @@
                     </div>
                     <div class="mt-auto p-2 bg-slate-100 rounded text-[9px] font-mono text-slate-500 uppercase border border-slate-200"><b>Sanasto:</b> ${getVal('VOC')}</div>
                 `;
+
+                // Näytetään äänitoiminnot
                 document.getElementById('audioBox').classList.remove('hidden');
+
+                // Haetaan linkkejä
                 fetchResources(getVal('TITLE'), key);
-            } catch (err) { display.innerHTML = `<div class="p-4 text-red-500 text-xs">Yhteysvirhe. Yritä uudelleen.</div>`; }
+
+            } catch (err) {
+                console.error("Virhe:", err);
+                display.innerHTML = `
+                    <div class="p-4 text-red-500 text-xs">
+                        <p>Virhe: ${err.message}</p>
+                        <p>Tarkista:</p>
+                        <ul class="list-disc pl-4">
+                            <li>API-avain</li>
+                            <li>Verkkoyhteys</li>
+                            <li>OpenRouterin tili</li>
+                        </ul>
+                    </div>
+                `;
+            }
         }
 
+        // Haetaan lisälinkkejä
         async function fetchResources(topic, key) {
             const resBox = document.getElementById('resourceBox');
             resBox.innerHTML = 'Haetaan linkkejä...';
             try {
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key.replace(/[^a-zA-Z0-9-]/g, '') },
-                    body: JSON.stringify({ "model": "google/gemini-2.0-flash-001", "messages": [{ "role": "user", "content": `Listaa 3 linkkiä aiheeseen: ${topic}. Vain lista.` }] })
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${key}`
+                    },
+                    body: JSON.stringify({
+                        "model": "google/gemini-2.0-flash-001",
+                        "messages": [{ "role": "user", "content": `Listaa 3 linkkiä aiheeseen: ${topic}. Vain lista.` }]
+                    })
                 });
+
+                if (!response.ok) {
+                    throw new Error("Linkkien haku epäonnistui");
+                }
+
                 const data = await response.json();
                 resBox.innerHTML = data.choices[0].message.content.split('\n').map(i => `<div class="mb-1 border-b border-slate-700 pb-1">🔗 ${i}</div>`).join('');
-            } catch (e) { resBox.innerHTML = 'Linkkejä ei löytynyt.'; }
+
+            } catch (e) {
+                resBox.innerHTML = 'Linkkejä ei löytynyt.';
+            }
         }
 
+        // Puhetoiminnot
         function speak() {
             window.speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance(document.getElementById('mainText').innerText);
@@ -147,27 +209,50 @@
             const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             recognition.lang = langs[document.getElementById('targetLang').value].v;
             recognition.start();
-            recognition.onresult = (e) => { alert("Sanoit: " + e.results[0][0].transcript); };
+            recognition.onresult = (e) => {
+                alert("Sanoit: " + e.results[0][0].transcript);
+            };
         }
 
+        // AI-chat
         async function chatSearch() {
             const inp = document.getElementById('chatInput');
             const history = document.getElementById('chatHistory');
             const key = document.getElementById('apiInput').value.trim();
-            if(!inp.value || !key) return;
+
+            if (!inp.value || !key) return;
+
             history.innerHTML += `<div class="text-white text-right font-normal italic">"${inp.value}"</div>`;
-            const msg = inp.value; inp.value = '';
+            const msg = inp.value;
+            inp.value = '';
+
             try {
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key.replace(/[^a-zA-Z0-9-]/g, '') },
-                    body: JSON.stringify({ "model": "google/gemini-2.0-flash-001", "messages": [{ "role": "user", "content": msg }] })
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${key}`
+                    },
+                    body: JSON.stringify({
+                        "model": "google/gemini-2.0-flash-001",
+                        "messages": [{ "role": "user", "content": msg }]
+                    })
                 });
+
+                if (!response.ok) {
+                    throw new Error("Chat-virhe");
+                }
+
                 const data = await response.json();
                 history.innerHTML += `<div class="bg-slate-800 p-1 rounded font-normal">AI: ${data.choices[0].message.content}</div>`;
                 history.scrollTop = history.scrollHeight;
-            } catch (e) { history.innerHTML += `<div>Virhe.</div>`; }
+
+            } catch (e) {
+                history.innerHTML += `<div>Virhe: ${e.message}</div>`;
+            }
         }
     </script>
 </body>
-</html> 
+</html>
+```
+
