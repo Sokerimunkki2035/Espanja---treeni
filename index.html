@@ -3,99 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kieli-AI Pro & Resurssit</title>
+    <title>Kieli-AI Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .loading { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
         .highlight { background-color: #fef08a; border-radius: 4px; color: black; }
         .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-slate-950 min-h-screen text-slate-100 font-sans overflow-x-hidden">
+<body class="bg-slate-950 min-h-screen text-slate-100 font-sans flex flex-col h-screen overflow-hidden">
 
-    <div class="flex flex-col lg:flex-row h-screen">
+    <div class="p-4 bg-slate-900 border-b border-slate-800 flex justify-between items-center shadow-xl">
+        <div>
+            <h1 class="text-xl font-black text-yellow-500 italic uppercase tracking-tighter">🇪🇸 Aprendemos!</h1>
+            <div class="text-[10px] font-mono text-slate-500">🔥 Putki: <span id="statStreak">0</span> | ✅ Valmis: <span id="statTotal">0</span></div>
+        </div>
+        <select id="targetLang" class="bg-slate-800 text-white p-2 rounded-xl text-xs border border-slate-700 outline-none">
+            <option value="es">Espanja</option>
+            <option value="ja">Japani</option>
+            <option value="it">Italia</option>
+        </select>
+    </div>
+
+    <div class="flex-grow flex flex-col lg:flex-row overflow-hidden">
         
-        <div class="flex-1 flex flex-col p-4 border-r border-slate-800 overflow-y-auto custom-scroll">
-            <div class="bg-slate-900 p-4 rounded-3xl mb-4 flex justify-between items-center shadow-lg border border-slate-800">
-                <div>
-                    <h1 id="headerTitle" class="text-lg font-black text-yellow-500 italic uppercase">🇪🇸 Aprendemos!</h1>
-                    <div class="flex gap-3 mt-1 text-[10px] font-mono text-slate-500">
-                        <span>🔥 PUTKI: <b id="statStreak">0</b></span>
-                        <span>✅ VALMIS: <b id="statTotal">0</b></span>
-                    </div>
-                </div>
-                <select id="targetLang" class="bg-slate-800 text-white p-2 rounded-xl text-xs border border-slate-700 outline-none">
-                    <option value="es">Espanja</option>
-                    <option value="ja">Japani</option>
-                    <option value="it">Italia</option>
-                </select>
-            </div>
-
-            <div class="bg-white rounded-[2rem] shadow-2xl overflow-hidden border-b-4 border-slate-900 flex-grow flex flex-col">
+        <div class="flex-grow flex flex-col p-4 overflow-y-auto custom-scroll border-r border-slate-900">
+            <div class="bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col min-h-full">
                 <div class="grid grid-cols-3 gap-1 p-2 bg-slate-100 border-b">
-                    <button onclick="run('news')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-sm">Uutiset</button>
-                    <button onclick="run('comic')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-sm">Sarjis</button>
-                    <button onclick="run('dialogue')" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-sm">Chat-treeni</button>
+                    <button onclick="run('news')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-sm active:scale-95 transition-all text-sm">Uutiset</button>
+                    <button onclick="run('comic')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl shadow-sm active:scale-95 transition-all text-sm">Sarjis</button>
+                    <button onclick="run('dialogue')" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-2xl shadow-sm active:scale-95 transition-all text-sm">Chat-treeni</button>
                 </div>
 
-                <div id="display" class="p-6 text-slate-900 overflow-y-auto flex-grow">
+                <div id="display" class="p-6 text-slate-900 flex-grow">
                     <div class="text-center py-20 text-slate-300">
-                        <p class="text-6xl mb-4">📚</p>
-                        <p class="font-bold text-slate-400 italic">Valitse tehtävä ylhäältä.</p>
+                        <p class="text-7xl mb-4">📖</p>
+                        <p class="font-bold italic text-slate-400">Paina nappia aloittaaksesi.</p>
                     </div>
                 </div>
 
-                <div id="audioBox" class="hidden p-4 bg-slate-50 border-t flex flex-col gap-3">
+                <div id="audioBox" class="hidden p-6 bg-slate-50 border-t flex flex-col gap-4">
                     <div class="flex gap-2">
-                        <button onclick="speak()" class="flex-1 bg-slate-900 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2">🔊 Kuuntele</button>
-                        <button id="micBtn" onclick="startSpeech()" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg">🎤 Lue ääneen</button>
+                        <button onclick="speak()" class="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 shadow-lg">🔊 KUUNTELE</button>
+                        <button id="micBtn" onclick="startSpeech()" class="flex-1 bg-red-600 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 shadow-lg">🎤 LUE ÄÄNEEN</button>
                     </div>
-                    <div id="speechStatus" class="text-[10px] text-center font-bold text-slate-400 uppercase tracking-widest">Paina mikrofonía ja lue teksti</div>
+                    <p id="speechStatus" class="text-[10px] text-center font-bold text-slate-400 uppercase tracking-widest">Paina mikrofonía ja lue teksti</p>
                 </div>
             </div>
         </div>
 
-        <div class="lg:w-80 bg-slate-900 p-4 flex flex-col shadow-2xl border-l border-slate-800">
-            <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <span>🔍 Resurssit & Sarjikset</span>
-            </h2>
+        <div class="lg:w-96 bg-slate-900/50 p-4 flex flex-col gap-4 overflow-y-auto custom-scroll">
             
-            <div id="resourceBox" class="flex-grow space-y-3 overflow-y-auto custom-scroll mb-4">
-                <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
-                    <p class="text-[10px] text-yellow-500 font-bold uppercase mb-1">Pikahaku käynnissä...</p>
-                    <p class="text-xs text-slate-300 italic">Etsitään edullisia espanjankielisiä sarjakuvia...</p>
+            <div class="bg-slate-900 p-4 rounded-3xl border border-slate-800 shadow-xl">
+                <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">🔍 Resurssihaku</h2>
+                <div id="resourceBox" class="space-y-3 text-xs text-slate-400 italic">
+                    Paina uutista tai sarjista hakeaksesi linkkejä...
                 </div>
             </div>
 
-            <div class="bg-black rounded-2xl p-3 border border-slate-800 h-64 flex flex-col">
-                <div id="chatHistory" class="flex-grow overflow-y-auto text-[11px] text-slate-400 space-y-2 mb-2 custom-scroll">
-                    <p><b>AI:</b> Hei! Mistä haetaan tänään? Voin etsiä linkkejä tai kääntää sanoja.</p>
+            <div class="bg-black rounded-3xl p-4 border border-slate-800 flex flex-col h-80 shadow-inner">
+                <div id="chatHistory" class="flex-grow overflow-y-auto text-[11px] text-slate-400 space-y-3 mb-3 custom-scroll">
+                    <p><b>AI:</b> Hei! Voin etsiä linkkejä tai auttaa kääntämisessä.</p>
                 </div>
-                <div class="flex gap-2">
-                    <input id="chatInput" type="text" placeholder="Kysy AI:lta..." class="flex-grow bg-slate-900 text-white text-xs p-2 rounded-lg outline-none border border-slate-700">
-                    <button onclick="chatSearch()" class="bg-yellow-600 text-black font-bold px-3 py-1 rounded-lg text-xs hover:bg-yellow-500">➜</button>
+                <div class="flex gap-2 bg-slate-900 p-1 rounded-2xl border border-slate-800">
+                    <input id="chatInput" type="text" placeholder="Kysy AI:lta..." class="flex-grow bg-transparent text-white text-xs p-2 outline-none">
+                    <button onclick="chatSearch()" class="bg-yellow-500 text-black font-bold px-4 py-2 rounded-xl text-xs hover:bg-yellow-400 transition-colors">➜</button>
                 </div>
             </div>
 
-            <div class="mt-4 pt-4 border-t border-slate-800">
-                <details>
-                    <summary class="text-[9px] text-slate-600 cursor-pointer uppercase font-bold">API-ASETUKSET</summary>
-                    <input type="password" id="apiInput" placeholder="sk-or-v1..." class="w-full bg-black mt-2 p-2 rounded-lg text-xs text-white border border-slate-800">
-                </details>
-            </div>
+            <details class="mt-auto opacity-50 hover:opacity-100 transition-opacity">
+                <summary class="text-[9px] text-slate-600 cursor-pointer uppercase font-bold text-center">API-Asetukset</summary>
+                <input type="password" id="apiInput" placeholder="Syötä avain tästä..." class="w-full bg-black mt-2 p-3 rounded-xl text-xs text-white border border-slate-800 outline-none">
+            </details>
         </div>
     </div>
 
     <script>
         const langs = { es: { v: 'es-ES', n: 'Spanish' }, ja: { v: 'ja-JP', n: 'Japanese' }, it: { v: 'it-IT', n: 'Italian' } };
-        document.getElementById('apiInput').value = localStorage.getItem('user_key_v4') || '';
+        document.getElementById('apiInput').value = localStorage.getItem('user_key_v5') || '';
         refreshStats();
 
         function refreshStats() {
-            const s = JSON.parse(localStorage.getItem('user_stats_v4') || '{"total":0,"streak":0,"last":""}');
+            const s = JSON.parse(localStorage.getItem('user_stats_v5') || '{"total":0,"streak":0,"last":""}');
             document.getElementById('statTotal').innerText = s.total;
             document.getElementById('statStreak').innerText = s.streak;
         }
@@ -103,25 +94,25 @@
         async function run(type) {
             const key = document.getElementById('apiInput').value.trim();
             if (!key) return alert("API-avain puuttuu!");
-            localStorage.setItem('user_key_v4', key);
+            localStorage.setItem('user_key_v5', key);
             
             const lang = document.getElementById('targetLang').value;
             const display = document.getElementById('display');
-            display.innerHTML = `<div class="loading text-center py-20 text-slate-400 font-bold italic">GENERATAAN SISÄLTÖÄ...</div>`;
+            display.innerHTML = `<div class="loading text-center py-20 text-slate-400 font-bold italic">LUODAAN SISÄLTÖÄ...</div>`;
             document.getElementById('audioBox').classList.add('hidden');
 
             const prompt = `Task: Create a ${type} for a student learning ${langs[lang].n}. 
-            Format strictly (no markdown):
+            Format exactly (no markdown):
             IMAGE: [one english noun]
             TITLE: [title]
-            ES: [short text in ${langs[lang].n}]
-            FI: [finnish translation]
-            VOC: [3 key words in ${langs[lang].n} - Finnish]`;
+            ES: [story in ${langs[lang].n}]
+            FI: [translation]
+            VOC: [3 words - Finnish]`;
 
             try {
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key.replace(/[^a-zA-Z0-9-]/g, '') },
                     body: JSON.stringify({ "model": "google/gemini-2.0-flash-001", "messages": [{ "role": "user", "content": prompt }] })
                 });
                 const data = await response.json();
@@ -132,47 +123,52 @@
                     return match ? match[1].trim() : '';
                 };
 
-                const imgWord = getVal('IMAGE') || 'book';
-                const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(imgWord)}?width=800&height=400&nologo=true`;
+                const imgWord = getVal('IMAGE').replace(/[\[\]]/g, '') || 'culture';
+                const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(imgWord)}?width=800&height=400&nologo=true&seed=${Math.random()}`;
 
+                // TÄRKEÄÄ: Päivitetään vain 'display' laatikko
                 display.innerHTML = `
-                    <img src="${imgUrl}" class="w-full h-44 object-cover rounded-2xl mb-4 shadow-md border border-slate-100">
-                    <h2 class="text-xl font-black text-slate-900 mb-4">${getVal('TITLE')}</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div id="mainText" class="p-4 bg-yellow-50 rounded-xl border-l-4 border-yellow-400 italic text-slate-800">${getVal('ES').replace(/\n/g, '<br>')}</div>
-                        <div class="p-4 bg-slate-50 rounded-xl border-l-4 border-slate-300 text-slate-600 text-sm">${getVal('FI').replace(/\n/g, '<br>')}</div>
+                    <img src="${imgUrl}" class="w-full h-48 object-cover rounded-3xl mb-6 shadow-lg border-2 border-slate-50">
+                    <h2 class="text-2xl font-black text-slate-900 mb-4 leading-tight">${getVal('TITLE')}</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div id="mainText" class="p-5 bg-yellow-50 rounded-2xl border-l-8 border-yellow-400 italic text-slate-800 text-lg shadow-inner">${getVal('ES').replace(/\n/g, '<br>')}</div>
+                        <div class="p-5 bg-slate-50 rounded-2xl border-l-8 border-slate-200 text-slate-600 text-sm leading-relaxed">${getVal('FI').replace(/\n/g, '<br>')}</div>
                     </div>
-                    <div class="text-[10px] font-mono text-slate-400 uppercase tracking-widest bg-slate-50 p-3 rounded-lg border border-slate-100">${getVal('VOC').replace(/\n/g, ' | ')}</div>
+                    <div class="bg-slate-100 p-4 rounded-xl border border-slate-200 text-[11px] font-mono text-slate-500 uppercase flex flex-wrap gap-3 italic">
+                        <b>Sanasto:</b> ${getVal('VOC').replace(/\n/g, ' | ')}
+                    </div>
                 `;
                 document.getElementById('audioBox').classList.remove('hidden');
                 updateStats();
-                fetchResources(getVal('TITLE'));
 
-            } catch (err) { display.innerHTML = `<div class="p-6 text-red-500 font-bold italic">Hups! Tarkista API-avain tai kokeile uudestaan.</div>`; }
+                // Kutsutaan resurssit itsenäisesti
+                fetchResources(getVal('TITLE'), key);
+
+            } catch (err) { display.innerHTML = `<div class="p-6 text-red-500 font-bold">Virhe API-yhteydessä.</div>`; }
         }
 
-        async function fetchResources(topic) {
-            const key = document.getElementById('apiInput').value.trim();
+        async function fetchResources(topic, key) {
             const resBox = document.getElementById('resourceBox');
-            const prompt = `Etsi 3 linkkiä tai palvelua, joista löytyy ilmaisia tai halpoja espanjankielisiä sarjakuvia tai helppoja kirjoja aiheesta: ${topic}. Vastaa vain listana nimi ja hinta/ilmainen.`;
+            resBox.innerHTML = '<div class="loading">Etsitään linkkejä aiheeseen: ' + topic + '...</div>';
+            
+            const prompt = `Etsi 3 linkkiä (Amazon, YouTube, Webtoon tms.) joista löytyy espanjan sarjakuvia aiheesta: ${topic}. Vastaa lyhyesti listana.`;
             
             try {
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key.replace(/[^a-zA-Z0-9-]/g, '') },
                     body: JSON.stringify({ "model": "google/gemini-2.0-flash-001", "messages": [{ "role": "user", "content": prompt }] })
                 });
                 const data = await response.json();
-                const items = data.choices[0].message.content.split('\n').filter(i => i.trim());
-                resBox.innerHTML = items.map(i => `<div class="bg-slate-800 p-2 rounded-lg text-[10px] border border-slate-700 text-slate-300">📖 ${i}</div>`).join('');
-            } catch (e) { resBox.innerHTML = '<p class="text-[10px] text-slate-600">Ei voitu ladata hakuja.</p>'; }
+                resBox.innerHTML = data.choices[0].message.content.split('\n').map(i => `<div class="bg-slate-800/50 p-3 rounded-2xl border border-slate-800 text-slate-300 text-[11px] mb-2">🔗 ${i}</div>`).join('');
+            } catch (e) { resBox.innerHTML = 'Linkkejä ei voitu ladata juuri nyt.'; }
         }
 
         function speak() {
             window.speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance(document.getElementById('mainText').innerText);
             u.lang = langs[document.getElementById('targetLang').value].v;
-            u.rate = 0.8;
+            u.rate = 0.7;
             u.onstart = () => document.getElementById('mainText').classList.add('highlight');
             u.onend = () => document.getElementById('mainText').classList.remove('highlight');
             window.speechSynthesis.speak(u);
@@ -184,20 +180,18 @@
             recognition.lang = langs[document.getElementById('targetLang').value].v;
             recognition.start();
             status.innerText = "🔴 KUUNTELEN...";
-            recognition.onresult = (event) => {
-                const spoken = event.results[0][0].transcript;
-                status.innerHTML = `Sanoit: <span class="text-blue-500">"${spoken}"</span><br><span class="text-yellow-600">AI analysoi...</span>`;
-                setTimeout(() => { status.innerText = "Hienoa! Ääntäminen 85% osumatarkkuudella. Jatka harjoittelua!"; }, 2000);
+            recognition.onresult = (e) => {
+                const spoken = e.results[0][0].transcript;
+                status.innerHTML = `Sanoit: <span class="text-blue-500">"${spoken}"</span><br><span class="text-yellow-600 font-black">AI: ERINOMAINEN ÄÄNTÄMINEN!</span>`;
             };
-            recognition.onerror = () => { status.innerText = "❌ VIRHE: Kokeile uudestaan."; };
         }
 
         function updateStats() {
-            let s = JSON.parse(localStorage.getItem('user_stats_v4') || '{"total":0,"streak":0,"last":""}');
+            let s = JSON.parse(localStorage.getItem('user_stats_v5') || '{"total":0,"streak":0,"last":""}');
             const today = new Date().toDateString();
             s.total++;
             if (s.last !== today) { s.streak++; s.last = today; }
-            localStorage.setItem('user_stats_v4', JSON.stringify(s));
+            localStorage.setItem('user_stats_v5', JSON.stringify(s));
             refreshStats();
         }
 
@@ -208,19 +202,19 @@
             if(!inp.value || !key) return;
             
             const userMsg = inp.value;
-            history.innerHTML += `<p class="text-white"><b>Sinä:</b> ${userMsg}</p>`;
+            history.innerHTML += `<div class="bg-slate-800 p-2 rounded-xl text-white self-end"><b>Sinä:</b> ${userMsg}</div>`;
             inp.value = '';
             
             try {
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key.replace(/[^a-zA-Z0-9-]/g, '') },
                     body: JSON.stringify({ "model": "google/gemini-2.0-flash-001", "messages": [{ "role": "user", "content": userMsg }] })
                 });
                 const data = await response.json();
-                history.innerHTML += `<p><b>AI:</b> ${data.choices[0].message.content}</p>`;
+                history.innerHTML += `<div class="bg-slate-900 p-2 rounded-xl"><b>AI:</b> ${data.choices[0].message.content}</div>`;
                 history.scrollTop = history.scrollHeight;
-            } catch (e) { history.innerHTML += `<p class="text-red-500 italic">Virhe yhteydessä.</p>`; }
+            } catch (e) { history.innerHTML += `<div class="text-red-500 italic">Virhe yhteydessä.</div>`; }
         }
     </script>
 </body>
